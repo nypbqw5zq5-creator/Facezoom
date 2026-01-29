@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Private Call</title>
+  <style>
+    body {
+      background:#111;
+      color:#fff;
+      text-align:center;
+      font-family:sans-serif;
+    }
+    video {
+      width:45%;
+      margin:5px;
+      border:2px solid #0f0;
+    }
+    input, button {
+      padding:10px;
+      margin:5px;
+      font-size:16px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Private 2‑Person Call</h2>
+<p>Enter secret code</p>
+
+<input id="room" placeholder="Secret code">
+<button onclick="start()">Join</button>
+
+<br><br>
+
+<video id="me" autoplay muted></video>
+<video id="you" autoplay></video>
+
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script>
+const SECRET_CODE = "Norayr2010";
+
+let peer;
+let localStream;
+
+async function start() {
+  const room = document.getElementById("room").value;
+
+  if (room !== SECRET_CODE) {
+    alert("Wrong code");
+    return;
+  }
+
+  localStream = await navigator.mediaDevices.getUserMedia({
+    video: true,
+    audio: true
+  });
+
+  document.getElementById("me").srcObject = localStream;
+
+  peer = new Peer(SECRET_CODE);
+
+  peer.on("call", call => {
+    call.answer(localStream);
+    call.on("stream", remote => {
+      document.getElementById("you").srcObject = remote;
+    });
+  });
+
+  setTimeout(() => {
+    const call = peer.call(SECRET_CODE, localStream);
+    if (call) {
+      call.on("stream", remote => {
+        document.getElementById("you").srcObject = remote;
+      });
+    }
+  }, 1500);
+}
+</script>
+
+</body>
+</html>
